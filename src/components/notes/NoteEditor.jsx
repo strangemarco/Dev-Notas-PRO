@@ -1,0 +1,265 @@
+import { useState, useEffect, useRef } from 'react';
+import ReactQuill, { Quill } from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
+import { Trash2, BookHeart, ChevronLeft, Clipboard, ChevronDown } from 'lucide-react';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/atom-one-dark.css'; // Tema oscuro profesional de hljs
+
+// Configurar highlight.js en la ventana global para Quill
+window.hljs = hljs;
+hljs.configure({
+  languages: ['javascript', 'ruby', 'python', 'java', 'cpp', 'go', 'php', 'csharp', 'html', 'css', 'sql', 'json', 'bash']
+});
+
+const modules = {
+  syntax: true,
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }, { 'size': ['small', false, 'large', 'huge'] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'align': [] }],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    ['blockquote', 'code-block'],
+    ['clean']
+  ],
+  clipboard: {
+    matchVisual: false
+  }
+};
+
+export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) => {
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const timerRef = useRef(null);
+  const quillRef = useRef(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (activeNote) {
+      setTitle(activeNote.title || '');
+      setContent(activeNote.content || '');
+    }
+  }, [activeNote?.id]);
+
+  const handleTitleChange = (e) => {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    triggerAutoSave(newTitle, content);
+  };
+
+  const handleContentChange = (value, delta, source, editor) => {
+    setContent(value);
+    // Solo auto-guardar si el cambio fue hecho por el usuario
+    if (source === 'user') {
+      const plainText = editor.getText();
+      triggerAutoSave(title, value, plainText);
+    }
+  };
+
+  const triggerAutoSave = (newTitle, newContent, plainText = null) => {
+    setIsSaving(true);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    
+    timerRef.current = setTimeout(() => {
+      const updates = {
+        title: newTitle,
+        content: newContent,
+      };
+      
+      if (plainText !== null) {
+        updates.plain_text = plainText;
+        const shortText = plainText.trim();
+        updates.snippet = shortText.substring(0, 100).replace(/\n/g, ' ') + (shortText.length > 100 ? '...' : '');
+      }
+
+      onUpdateNote(activeNote.id, updates).finally(() => setIsSaving(false));
+    }, 1000);
+  };
+
+  const handlePaste = (e) => {
+    const html = e.clipboardData?.getData('text/html');
+    const text = e.clipboardData?.getData('text/plain');
+    
+    // Detectar si es código
+    const isCode = text && (
+      (html && (html.includes('Consolas') || html.includes('Courier New') || html.includes('white-space: pre') || html.includes('vscode'))) ||
+      text.includes('function ') || text.includes('class ') ||
+      text.includes('SELECT ') || text.includes('CREATE TABLE') ||
+      text.includes('<!DOCTYPE html>') || text.includes('namespace ') ||
+      text.includes('public class ') || text.includes('const ') ||
+      text.includes('let ') || (text.includes('{') && text.includes('}') && text.includes('"'))
+    );
+    
+    if (isCode && text && quillRef.current) {
+      e.preventDefault();
+      const quill = quillRef.current.getEditor();
+      
+      let lang = 'javascript';
+      if (text.includes('CREATE TABLE') || text.includes('SELECT ')) lang = 'sql';
+      else if (text.includes('<!DOCTYPE') || text.includes('<html>')) lang = 'html';
+      else if (text.includes('namespace ') || text.includes('public class ')) lang = 'csharp';
+      else if (text.trim().startsWith('{') && text.trim().endsWith('}')) lang = 'json';
+      
+      const range = quill.getSelection(true) || { index: 0 };
+      let offset = 0;
+      if (range.index > 0) {
+        const textBefore = quill.getText(range.index - 1, 1);
+        if (textBefore !== '\n') {
+          quill.insertText(range.index, '\n', 'user');
+          offset = 1;
+        }
+      }
+      
+      quill.insertText(range.index + offset, text, 'user');
+      quill.formatLine(range.index + offset, text.length, 'code-block', lang, 'user');
+      quill.setSelection(range.index + offset + text.length, 0, 'user');
+    }
+  };
+
+  const [codeBlocks, setCodeBlocks] = useState([]);
+
+  // Actualizar posiciones de los botones de copia
+  const updateCopyButtons = () => {
+    const editorBody = document.querySelector('.editor-body');
+    const qlEditor = document.querySelector('.ql-editor');
+    if (!editorBody || !qlEditor) return;
+
+    const blocks = Array.from(document.querySelectorAll('pre.ql-syntax'));
+    const editorRect = editorBody.getBoundingClientRect();
+
+    const newCodeBlocks = blocks.map((block, index) => {
+      const blockRect = block.getBoundingClientRect();
+      // Quill 1.3 sometimes uses data-language, or we default to 'Auto'
+      const langAttr = block.dataset.language || 'Auto';
+      const formattedLang = langAttr.charAt(0).toUpperCase() + langAttr.slice(1);
+      
+      return {
+        id: `code-block-${index}`,
+        top: blockRect.top - editorRect.top,
+        right: editorRect.width - (blockRect.right - editorRect.left) + 8, // Alineado a la derecha
+        text: block.innerText,
+        language: formattedLang,
+        isVisible: blockRect.top < editorRect.bottom && blockRect.bottom > editorRect.top // Only show if visible
+      };
+    });
+
+    setCodeBlocks(newCodeBlocks);
+  };
+
+  useEffect(() => {
+    // Actualizar botones cuando el contenido cambie
+    updateCopyButtons();
+    
+    // Observar cambios en el DOM del editor para bloques de código
+    const observer = new MutationObserver(updateCopyButtons);
+    const qlEditor = document.querySelector('.ql-editor');
+    if (qlEditor) {
+      observer.observe(qlEditor, { childList: true, subtree: true, characterData: true });
+      qlEditor.addEventListener('scroll', updateCopyButtons);
+      window.addEventListener('resize', updateCopyButtons);
+    }
+
+    return () => {
+      observer.disconnect();
+      if (qlEditor) qlEditor.removeEventListener('scroll', updateCopyButtons);
+      window.removeEventListener('resize', updateCopyButtons);
+    };
+  }, [content]);
+
+  const handleCopyCode = (text) => {
+    navigator.clipboard.writeText(text);
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: 'Código copiado',
+      showConfirmButton: false,
+      timer: 1500,
+      background: 'var(--bg-surface)',
+      color: 'var(--text-primary)'
+    });
+  };
+
+  if (!activeNote) {
+    return (
+      <div className="dashboard-editor empty">
+        <div className="empty-state-content" style={{textAlign: 'center', color: 'var(--text-secondary)', opacity: 0.7}}>
+          <BookHeart size={64} style={{marginBottom: '1rem', color: 'var(--accent-color)'}} />
+          <h3 style={{color: 'var(--text-primary)'}}>Selecciona o crea una nota</h3>
+          <p>Tus ideas y fragmentos de código, listos.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="dashboard-editor">
+      <div className="editor-header">
+        <div className="editor-title-container">
+          <button 
+            className="btn-icon mobile-back-btn" 
+            onClick={onBack}
+            title="Volver a la lista"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <input 
+            type="text"
+            className="editor-title-input"
+            value={title}
+            onChange={handleTitleChange}
+            placeholder="Título de la nota..."
+          />
+        </div>
+        <div className="editor-actions">
+          <span className="save-status">
+            {isSaving ? 'Guardando...' : 'Guardado'}
+          </span>
+          <button 
+            className="btn-icon danger" 
+            onClick={() => onDeleteNote(activeNote.id)}
+            title="Eliminar nota"
+          >
+            <Trash2 size={18} />
+          </button>
+        </div>
+      </div>
+      
+      <div className="editor-body" onPasteCapture={handlePaste}>
+        <ReactQuill 
+          ref={quillRef}
+          theme="snow"
+          value={content}
+          onChange={handleContentChange}
+          modules={modules}
+          placeholder="Escribe tu nota aquí... Usa el icono de código para tus fragmentos."
+        />
+        {codeBlocks.map((block) => block.isVisible && (
+          <div 
+            key={block.id}
+            className="code-block-header-pill"
+            style={{ 
+              top: block.top + 8, 
+              right: block.right, 
+              zIndex: 9999,
+              position: 'absolute'
+            }}
+          >
+            <span className="code-lang-label">
+              {block.language} <ChevronDown size={14} className="chevron" />
+            </span>
+            <div className="code-pill-divider"></div>
+            <button 
+              className="code-copy-btn"
+              onClick={() => handleCopyCode(block.text)}
+              title="Copiar código"
+            >
+              <Clipboard size={16} />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
