@@ -572,10 +572,27 @@ body {
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border-color);
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .editor-header {
+    padding: 16px 20px;
+    gap: 12px;
+  }
+}
+
+.editor-title-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0; /* Permite truncar si es muy largo */
 }
 
 .editor-title-input {
   flex: 1;
+  min-width: 0;
   border: none;
   background: transparent;
   font-size: 28px;
@@ -583,6 +600,7 @@ body {
   color: var(--text-primary);
   outline: none;
   font-family: inherit;
+  text-overflow: ellipsis;
 }
 
 .editor-title-input::placeholder {
@@ -593,7 +611,8 @@ body {
 .editor-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  flex-shrink: 0; /* Evita que los botones se encojan */
 }
 
 .save-status {
@@ -665,21 +684,23 @@ body {
 }
 
 /* Code Block UI to match user screenshot */
-.editor-body .ql-editor pre.ql-syntax {
-  background-color: #1e1e1e;
-  border-radius: 8px;
-  padding: 16px;
-  padding-top: 48px; /* Espacio para la barra superior */
-  position: relative;
-  overflow: visible;
-  font-family: 'Consolas', 'Courier New', monospace;
-  color: #d4d4d4;
-  border: 1px solid #333;
-  margin: 16px 0;
+.editor-body .ql-editor pre.ql-syntax,
+.editor-body .ql-editor .ql-code-block-container {
+  background-color: #1e1e1e !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  padding-top: 48px !important; /* Espacio para la barra superior */
+  position: relative !important;
+  overflow: visible !important;
+  font-family: 'Consolas', 'Courier New', monospace !important;
+  color: #d4d4d4 !important;
+  border: 1px solid #333 !important;
+  margin: 16px 0 !important;
 }
 
 /* Barra superior del bloque de código */
-.editor-body .ql-editor pre.ql-syntax::before {
+.editor-body .ql-editor pre.ql-syntax::before,
+.editor-body .ql-editor .ql-code-block-container::before {
   content: '';
   position: absolute;
   top: 0;
@@ -692,10 +713,28 @@ body {
   border-bottom: 1px solid #333;
 }
 
-/* Ocultar el selector nativo de Quill dentro del bloque si existiera */
+/* Ocultar elementos nativos de Quill pero mantener el select transparente para que funcione */
+.ql-ui {
+  display: none !important;
+}
 pre.ql-syntax select,
 pre.ql-syntax .ql-picker {
   display: none !important;
+}
+
+/* Hacer que el select nativo sea invisible pero clickeable sobre nuestra píldora */
+.editor-body .ql-editor .ql-code-block-container select {
+  display: block !important;
+  position: absolute;
+  top: 4px;
+  right: 45px;
+  width: 80px;
+  height: 28px;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 10000;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 /* Nuevo estilo de píldora flotante para código (Lenguaje + Copiar) */

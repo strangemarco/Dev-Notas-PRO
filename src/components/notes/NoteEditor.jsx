@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import ReactQuill, { Quill } from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
-import { Trash2, BookHeart, ChevronLeft, Clipboard, ChevronDown } from 'lucide-react';
+import { Trash2, BookHeart, ChevronLeft, Clipboard, ChevronDown, Download, FileText, File } from 'lucide-react';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/atom-one-dark.css'; // Tema oscuro profesional de hljs
+import Swal from 'sweetalert2';
+import TurndownService from 'turndown';
+import html2pdf from 'html2pdf.js';
 
 // Configurar highlight.js en la ventana global para Quill
 window.hljs = hljs;
@@ -125,20 +128,48 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
     const qlEditor = document.querySelector('.ql-editor');
     if (!editorBody || !qlEditor) return;
 
-    const blocks = Array.from(document.querySelectorAll('pre.ql-syntax'));
+    // Buscar tanto para Quill 1.x como para Quill 2.x
+    const blocks = Array.from(document.querySelectorAll('pre.ql-syntax, .ql-code-block-container'));
     const editorRect = editorBody.getBoundingClientRect();
 
     const newCodeBlocks = blocks.map((block, index) => {
       const blockRect = block.getBoundingClientRect();
-      // Quill 1.3 sometimes uses data-language, or we default to 'Auto'
-      const langAttr = block.dataset.language || 'Auto';
-      const formattedLang = langAttr.charAt(0).toUpperCase() + langAttr.slice(1);
+      
+      let text = '';
+      let langAttr = 'Auto';
+
+      if (block.tagName.toLowerCase() === 'pre') {
+        text = block.innerText;
+        langAttr = block.dataset.language || 'Auto';
+      } else {
+        // Quill 2.x usa divs internos, o contenedores principales
+        const clone = block.cloneNode(true);
+        // Remover elementos de interfaz que no son parte del código
+        const uiElements = clone.querySelectorAll('select, .ql-ui, .code-block-header-pill, .code-lang-label');
+        uiElements.forEach(el => el.remove());
+        
+        // Obtener el texto limpio
+        text = clone.innerText || clone.textContent;
+        // Eliminar posibles espacios/saltos extra al final
+        text = text.trimEnd();
+        
+        const select = block.querySelector('select');
+        if (select) {
+          // El texto visible del option seleccionado
+          const selectedOption = select.options[select.selectedIndex];
+          if (selectedOption) langAttr = selectedOption.text;
+        }
+      }
+
+      const formattedLang = langAttr && langAttr !== 'Auto' 
+        ? langAttr.charAt(0).toUpperCase() + langAttr.slice(1) 
+        : 'Código';
       
       return {
         id: `code-block-${index}`,
         top: blockRect.top - editorRect.top,
         right: editorRect.width - (blockRect.right - editorRect.left) + 8, // Alineado a la derecha
-        text: block.innerText,
+        text: text,
         language: formattedLang,
         isVisible: blockRect.top < editorRect.bottom && blockRect.bottom > editorRect.top // Only show if visible
       };
@@ -181,6 +212,78 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
     });
   };
 
+  const handleDownloadMD = () => {
+    if (!content || !title) return;
+    
+    // Crear instancia de Turndown configurada para código
+    const turndownService = new TurndownService({
+      headingStyle: 'atx',
+      codeBlockStyle: 'fenced'
+    });
+    
+    // Mejorar conversión de bloques de código de Quill
+    turndownService.addRule('quillCodeBlock', {
+      filter: function (node) {
+        return node.nodeName === 'PRE' && node.classList.contains('ql-syntax');
+      },
+      replacement: function (content, node) {
+        const lang = node.dataset.language || '';
+        return '\n```' + lang + '\n' + node.innerText + '\n```\n';
+      }
+    });
+
+    const markdown = turndownService.turndown(content);
+    
+    // Crear el archivo y forzar descarga
+    const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${title.replace(/\s+/g, '_')}.md`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    Swal.fire({
+      toast: true, position: 'top-end', icon: 'success', title: 'Descargado como Markdown', showConfirmButton: false, timer: 1500, background: 'var(--bg-surface)', color: 'var(--text-primary)'
+    });
+  };
+
+  const handleDownloadPDF = () => {
+    if (!title) return;
+    const element = document.createElement('div');
+    element.innerHTML = `
+      <div style="padding: 40px; font-family: sans-serif; color: #333;">
+        <h1 style="border-bottom: 2px solid #eaeaea; padding-bottom: 10px; margin-bottom: 20px; color: #111;">${title}</h1>
+        <div class="pdf-content">${content}</div>
+      </div>
+    `;
+
+    // Estilos para que los bloques de código se vean bien en el PDF
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .pdf-content pre { background-color: #f6f8fa; border-radius: 6px; padding: 16px; font-family: monospace; white-space: pre-wrap; word-wrap: break-word; }
+      .pdf-content p { line-height: 1.6; margin-bottom: 1em; }
+      .pdf-content h1, .pdf-content h2, .pdf-content h3 { margin-top: 1.5em; margin-bottom: 0.5em; }
+    `;
+    element.appendChild(style);
+
+    const opt = {
+      margin:       10,
+      filename:     `${title.replace(/\s+/g, '_')}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+      Swal.fire({
+        toast: true, position: 'top-end', icon: 'success', title: 'Descargado como PDF', showConfirmButton: false, timer: 1500, background: 'var(--bg-surface)', color: 'var(--text-primary)'
+      });
+    });
+  };
+
   if (!activeNote) {
     return (
       <div className="dashboard-editor empty">
@@ -216,6 +319,21 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
           <span className="save-status">
             {isSaving ? 'Guardando...' : 'Guardado'}
           </span>
+          <button 
+            className="btn-icon" 
+            onClick={handleDownloadMD}
+            title="Descargar como Markdown"
+          >
+            <FileText size={18} />
+          </button>
+          <button 
+            className="btn-icon" 
+            onClick={handleDownloadPDF}
+            title="Descargar como PDF"
+          >
+            <File size={18} />
+          </button>
+          <div style={{width: '1px', height: '24px', backgroundColor: 'var(--border-color)', margin: '0 4px'}}></div>
           <button 
             className="btn-icon danger" 
             onClick={() => onDeleteNote(activeNote.id)}
