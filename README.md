@@ -1,8 +1,8 @@
-# Dev-Notas-PRO 📝🚀
+# Dev-Notas-PRO 
 
 Dev-Notas-PRO es una aplicación web diseñada específicamente para desarrolladores que necesitan un espacio rápido, seguro y con soporte para código donde puedan guardar sus apuntes, snippets y notas técnicas.
 
-## 🌟 Características Principales
+## Características Principales
 
 *   **Autenticación Segura:** Sistema completo de registro e inicio de sesión seguro utilizando **Supabase**.
 *   **Gestión de Notas:** Crear, leer, actualizar y eliminar (CRUD) notas de forma intuitiva.
@@ -11,7 +11,7 @@ Dev-Notas-PRO es una aplicación web diseñada específicamente para desarrollad
 *   **Modo Oscuro/Claro:** Interfaz de usuario que se adapta a tus preferencias visuales con un toggle de tema integrado.
 *   **Diseño Responsivo:** Funciona perfectamente tanto en dispositivos móviles como en pantallas grandes de escritorio.
 
-## 🛠️ Stack Tecnológico
+##  Stack Tecnológico
 
 El proyecto está construido utilizando las siguientes tecnologías modernas:
 
@@ -25,7 +25,7 @@ El proyecto está construido utilizando las siguientes tecnologías modernas:
     *   **CSS Vanilla** (Diseño moderno utilizando propiedades personalizadas, Flexbox y Grid).
     *   **Highlight.js** (Para el resaltado de sintaxis en bloques de código).
 
-## 🚀 Instalación y Ejecución Local
+## Instalación y Ejecución Local
 
 Si deseas correr este proyecto en tu propia máquina, sigue estos pasos:
 
@@ -53,13 +53,13 @@ Si deseas correr este proyecto en tu propia máquina, sigue estos pasos:
     ```
     La aplicación estará disponible en `http://localhost:5173`.
 
-## ☁️ Despliegue en Vercel
+##  Despliegue en Vercel
 
 Esta aplicación está optimizada para ser desplegada fácilmente en **Vercel**. 
 
 **Importante:** Al desplegar en Vercel (o cualquier otra plataforma), recuerda ir a la sección de **"Environment Variables" (Variables de Entorno)** en la configuración de tu proyecto y agregar `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`. De lo contrario, la aplicación mostrará una pantalla en blanco y errores en consola al intentar conectarse a la base de datos.
 
-## 📂 Estructura del Proyecto
+##  Estructura del Proyecto
 
 ```
 src/
