@@ -3,7 +3,7 @@ import { Loader } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { authService } from '../services/authService';
 import { notesService } from '../services/notesService';
-import { SidebarList } from '../components/notes/SidebarList';
+import { NotesGridView } from '../components/notes/NotesGridView';
 import { NoteEditor } from '../components/notes/NoteEditor';
 import { SettingsModal } from '../components/settings/SettingsModal';
 import Swal from 'sweetalert2';
@@ -26,14 +26,8 @@ export const NotesPage = () => {
     setIsLoading(true);
     try {
       const data = await notesService.getNotes();
-      setNotes(data);
-      if (data.length > 0 && !activeNoteId) {
-        // En móviles (<= 768px) no seleccionamos ninguna nota por defecto
-        // para que se muestre primero la lista de notas.
-        if (window.innerWidth > 768) {
-          setActiveNoteId(data[0].id);
-        }
-      }
+      setNotes(data || []);
+      // No seleccionamos nota por defecto para que la vista inicial sea la cuadrícula de Cards
     } catch (error) {
       console.error("Error al cargar notas:", error);
     } finally {
@@ -147,25 +141,24 @@ export const NotesPage = () => {
           <Loader size={50} className="spinner-icon" />
           <p>Cargando tus notas...</p>
         </div>
+      ) : activeNote ? (
+        <NoteEditor 
+          activeNote={activeNote} 
+          onUpdateNote={handleUpdateNote}
+          onDeleteNote={handleDeleteNote}
+          onBack={() => setActiveNoteId(null)}
+        />
       ) : (
-        <>
-          <SidebarList 
-            notes={filteredNotes} 
-            activeNoteId={activeNoteId} 
-            onSelectNote={setActiveNoteId}
-            onNewNote={handleNewNote}
-            onLogout={handleLogout}
-            onOpenSettings={() => setIsSettingsOpen(true)}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-          />
-          <NoteEditor 
-            activeNote={activeNote} 
-            onUpdateNote={handleUpdateNote}
-            onDeleteNote={handleDeleteNote}
-            onBack={() => setActiveNoteId(null)}
-          />
-        </>
+        <NotesGridView 
+          notes={filteredNotes} 
+          onSelectNote={setActiveNoteId}
+          onNewNote={handleNewNote}
+          onDeleteNote={handleDeleteNote}
+          onLogout={handleLogout}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+        />
       )}
       
       <SettingsModal 

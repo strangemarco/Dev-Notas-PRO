@@ -301,11 +301,12 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
       <div className="editor-header">
         <div className="editor-title-container">
           <button 
-            className="btn-icon mobile-back-btn" 
+            className="btn-back-to-cards" 
             onClick={onBack}
-            title="Volver a la lista"
+            title="Volver a todas las notas"
           >
-            <ChevronLeft size={24} />
+            <ChevronLeft size={20} />
+            <span>Notas</span>
           </button>
           <input 
             type="text"
