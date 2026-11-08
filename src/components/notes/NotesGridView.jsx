@@ -64,9 +64,7 @@ export const NotesGridView = ({
       {/* Barra superior de navegación */}
       <header className="home-navbar">
         <div className="home-navbar-brand">
-          <div className="brand-logo-badge">
-            <BookHeart size={24} className="brand-icon" />
-          </div>
+          <BookHeart size={26} className="brand-icon" />
           <div className="brand-text">
             <h1 className="brand-title">DevNotas</h1>
             <span className="brand-badge">PRO</span>
@@ -226,3 +224,4 @@ export const NotesGridView = ({
     </div>
   );
 };
+
