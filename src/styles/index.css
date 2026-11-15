@@ -931,38 +931,46 @@ html.dark .ql-editor.ql-blank::before {
 }
 
 .ql-editor table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1.5rem 0;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  border-collapse: collapse !important;
+  width: 100% !important;
+  margin: 1.25rem 0 !important;
+  display: table !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .ql-editor td,
 .ql-editor th {
-  border: 1px solid var(--border-color) !important;
-  padding: 10px 14px !important;
-  min-width: 90px;
-  text-align: left;
-  vertical-align: top;
-  color: var(--text-primary);
-  background-color: var(--bg-surface);
+  border: 1.5px solid #94a3b8 !important;
+  padding: 8px 12px !important;
+  min-width: 50px !important;
+  text-align: left !important;
+  vertical-align: top !important;
+  color: var(--text-primary) !important;
+  background-color: var(--bg-surface) !important;
   transition: background-color 0.15s ease;
+  box-sizing: border-box !important;
 }
 
 .ql-editor tr:hover td {
-  background-color: color-mix(in srgb, var(--border-color) 20%, var(--bg-surface));
+  background-color: color-mix(in srgb, var(--border-color) 25%, var(--bg-surface)) !important;
 }
 
 html.dark .ql-editor td,
 html.dark .ql-editor th {
-  border-color: rgba(255, 255, 255, 0.16) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.28) !important;
 }
 
-html.dark .ql-editor tr:first-child td {
-  background-color: color-mix(in srgb, var(--accent-color) 14%, var(--bg-surface));
-  font-weight: 600;
+.ql-editor tr:first-child td,
+.ql-editor th {
+  background-color: color-mix(in srgb, var(--accent-color) 12%, rgba(0, 0, 0, 0.04)) !important;
+  font-weight: 700 !important;
+  border-bottom: 2px solid #64748b !important;
+}
+
+html.dark .ql-editor tr:first-child td,
+html.dark .ql-editor th {
+  background-color: color-mix(in srgb, var(--accent-color) 18%, rgba(255, 255, 255, 0.06)) !important;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.4) !important;
 }
 
 /* Opciones de Tabla en SweetAlert */
@@ -1628,23 +1636,39 @@ html.dark .ql-editor code {
 
   .dashboard-container.has-active-note .dashboard-editor {
     display: flex;
+    flex-direction: column;
     flex: 1;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
   }
 
   /* Ajustes para el editor en móvil */
   .mobile-back-btn {
     display: flex;
-    /* Mostrar solo en móvil */
-    margin-right: 8px;
-    padding: 4px;
+    margin-right: 6px;
+    padding: 6px;
+  }
+
+  .btn-back-to-cards {
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.82rem !important;
+    gap: 0.25rem !important;
+    margin-right: 0.5rem !important;
   }
 
   .editor-header {
-    padding: 12px 20px;
+    padding: 8px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 25;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
   }
 
   .editor-title-input {
-    font-size: 20px;
+    font-size: 17px;
     min-width: 0;
   }
 
@@ -1656,24 +1680,77 @@ html.dark .ql-editor code {
   }
 
   .editor-actions {
-    gap: 8px;
+    gap: 4px;
+    flex-shrink: 0;
   }
 
+  .editor-actions .save-status {
+    display: none; /* Ocultar "Guardado" en pantallas pequeñas para dar espacio a los iconos */
+  }
+
+  .editor-actions .btn-icon {
+    padding: 6px;
+  }
+
+  .editor-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Barra de herramientas compacta en móvil */
   .editor-body .ql-toolbar {
-    padding: 8px 12px !important;
+    padding: 6px 8px !important;
+    flex-shrink: 0;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 4px;
+    align-items: center;
+  }
+
+  .editor-body .ql-toolbar .ql-formats {
+    margin-right: 4px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .editor-body .ql-toolbar .ql-picker.ql-font {
+    width: 105px !important;
+  }
+
+  .editor-body .ql-toolbar .ql-picker.ql-header {
+    width: 95px !important;
+  }
+
+  .editor-body .ql-toolbar .ql-picker.ql-size {
+    width: 90px !important;
+  }
+
+  .editor-body .ql-toolbar .ql-picker-label {
+    padding-left: 4px !important;
+    padding-right: 18px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .editor-body .ql-container {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
   }
 
   .editor-body .ql-editor {
-    padding: 16px 20px;
+    padding: 14px 16px;
+    overflow-x: auto; /* Permitir scroll horizontal en tablas y bloques de código */
   }
 
   .editor-body .ql-editor pre.ql-syntax {
-    padding: 48px 12px 12px 12px;
-    /* Ajuste para móviles */
+    padding: 44px 10px 10px 10px;
   }
 
   .code-block-header-pill {
-    right: 12px !important;
+    right: 10px !important;
   }
 
   /* Settings Modal en Móvil */
@@ -2211,6 +2288,11 @@ html.dark .ql-editor code {
 
   .home-content-container {
     padding: 1.25rem 1rem;
+  }
+
+  .notes-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .user-profile-name {

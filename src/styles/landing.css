@@ -813,21 +813,136 @@ html.dark[data-accent="black"] .btn-primary {
   }
 }
 
+/* Botones de navegación adaptables */
+.nav-btn-text-mobile {
+  display: none;
+}
+
+.nav-btn-text {
+  display: inline;
+}
+
 @media (max-width: 640px) {
-  .landing-hero-title {
-    font-size: 2.1rem;
+  .public-navbar-container {
+    padding: 0.6rem 0.85rem !important;
+    gap: 0.5rem !important;
   }
 
-  .landing-hero-subtitle {
-    font-size: 1rem;
+  .public-nav-brand {
+    font-size: 1.05rem !important;
+    gap: 0.45rem !important;
   }
 
-  .landing-code-window {
-    display: none; /* Simplificar en pantallas móviles muy pequeñas */
+  .public-nav-brand .brand-logo-icon {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  .brand-pro-tag {
+    font-size: 0.6rem !important;
+    padding: 1px 5px !important;
+  }
+
+  .public-nav-actions {
+    gap: 0.4rem !important;
+  }
+
+  .public-nav-buttons {
+    gap: 0.35rem !important;
+  }
+
+  .nav-btn-text {
+    display: none !important;
+  }
+
+  .nav-btn-text-mobile {
+    display: inline !important;
+  }
+
+  .btn-nav-login {
+    padding: 0.42rem 0.65rem !important;
+    font-size: 0.82rem !important;
+    white-space: nowrap !important;
+  }
+
+  .public-nav-buttons .btn-sm {
+    padding: 0.42rem 0.75rem !important;
+    font-size: 0.82rem !important;
+    white-space: nowrap !important;
+  }
+
+  .public-nav-auth-switch {
+    gap: 0 !important;
+  }
+
+  .public-nav-auth-switch .btn {
+    padding: 0.42rem 0.75rem !important;
+    font-size: 0.82rem !important;
+    white-space: nowrap !important;
+  }
+
+  .auth-card-badge {
+    display: none !important;
   }
 
   .auth-glass-card {
-    padding: 1.75rem 1.25rem;
+    padding: 1.5rem 1.15rem !important;
+    border-radius: 18px !important;
+  }
+
+  .card-headline {
+    font-size: 1.5rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  .card-subheadline {
+    font-size: 0.85rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  .landing-hero-section {
+    margin: 0.75rem auto 2.5rem auto !important;
+  }
+
+  .landing-badge-pill {
+    font-size: 0.78rem !important;
+    padding: 0.35rem 0.85rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  .landing-hero-title {
+    font-size: 1.85rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .landing-hero-subtitle {
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: 1.75rem !important;
+  }
+
+  .landing-hero-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 0.75rem !important;
+    margin-bottom: 2rem !important;
+  }
+
+  .landing-hero-actions .btn {
+    width: 100% !important;
+  }
+
+  .landing-trust-bar {
+    gap: 0.75rem !important;
+  }
+
+  .trust-pill {
+    font-size: 0.78rem !important;
+  }
+
+  .landing-code-window {
+    display: none;
   }
 
   .auth-switch-text {

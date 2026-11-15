@@ -39,24 +39,32 @@ export const PublicNavbar = () => {
           ) : isLoginPage ? (
             <div className="public-nav-auth-switch">
               <span className="auth-switch-text">¿No tienes cuenta?</span>
-              <Link to="/register" className="btn btn-primary btn-sm">
-                <UserPlus size={16} /> Registrarse
+              <Link to="/register" className="btn btn-primary btn-sm" title="Registrarse">
+                <UserPlus size={16} />
+                <span className="nav-btn-text">Registrarse</span>
+                <span className="nav-btn-text-mobile">Registro</span>
               </Link>
             </div>
           ) : isRegisterPage ? (
             <div className="public-nav-auth-switch">
               <span className="auth-switch-text">¿Ya tienes cuenta?</span>
-              <Link to="/login" className="btn btn-outline btn-sm">
-                <LogIn size={16} /> Iniciar Sesión
+              <Link to="/login" className="btn btn-outline btn-sm" title="Iniciar Sesión">
+                <LogIn size={16} />
+                <span className="nav-btn-text">Iniciar Sesión</span>
+                <span className="nav-btn-text-mobile">Entrar</span>
               </Link>
             </div>
           ) : (
             <div className="public-nav-buttons">
-              <Link to="/login" className="btn-nav-login">
-                <LogIn size={16} /> Iniciar Sesión
+              <Link to="/login" className="btn-nav-login" title="Iniciar Sesión">
+                <LogIn size={16} />
+                <span className="nav-btn-text">Iniciar Sesión</span>
+                <span className="nav-btn-text-mobile">Entrar</span>
               </Link>
-              <Link to="/register" className="btn btn-primary btn-sm">
-                <UserPlus size={16} /> Comenzar gratis
+              <Link to="/register" className="btn btn-primary btn-sm" title="Comenzar gratis">
+                <UserPlus size={16} />
+                <span className="nav-btn-text">Comenzar gratis</span>
+                <span className="nav-btn-text-mobile">Registro</span>
               </Link>
             </div>
           )}
