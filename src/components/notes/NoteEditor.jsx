@@ -343,7 +343,7 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
   const handleDownloadMD = () => {
     if (!content || !title) return;
 
-    // Crear instancia de Turndown configurada para código
+    // Crear instancia de Turndown configurada para código y tablas
     const turndownService = new TurndownService({
       headingStyle: 'atx',
       codeBlockStyle: 'fenced'
@@ -357,6 +357,28 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
       replacement: function (content, node) {
         const lang = node.dataset.language || '';
         return '\n```' + lang + '\n' + node.innerText + '\n```\n';
+      }
+    });
+
+    // Conversión de tablas HTML a formato Markdown estándar
+    turndownService.addRule('table', {
+      filter: ['table'],
+      replacement: function (content, node) {
+        const rows = Array.from(node.querySelectorAll('tr'));
+        if (rows.length === 0) return '';
+        
+        let mdTable = '\n';
+        rows.forEach((row, rowIndex) => {
+          const cells = Array.from(row.querySelectorAll('th, td'));
+          const rowText = '| ' + cells.map(c => c.textContent.trim().replace(/\|/g, '\\|') || ' ').join(' | ') + ' |';
+          mdTable += rowText + '\n';
+          
+          if (rowIndex === 0) {
+            const separator = '| ' + cells.map(() => '---').join(' | ') + ' |';
+            mdTable += separator + '\n';
+          }
+        });
+        return mdTable + '\n';
       }
     });
 
@@ -382,26 +404,118 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
     if (!title) return;
     const element = document.createElement('div');
     element.innerHTML = `
-      <div style="padding: 40px; font-family: sans-serif; color: #333;">
-        <h1 style="border-bottom: 2px solid #eaeaea; padding-bottom: 10px; margin-bottom: 20px; color: #111;">${title}</h1>
+      <div class="pdf-container">
+        <h1 class="pdf-title">${title}</h1>
         <div class="pdf-content">${content}</div>
       </div>
     `;
 
-    // Estilos para que los bloques de código se vean bien en el PDF
+    // Estilos completos y profesionales para el documento PDF
     const style = document.createElement('style');
     style.innerHTML = `
-      .pdf-content pre { background-color: #f6f8fa; border-radius: 6px; padding: 16px; font-family: monospace; white-space: pre-wrap; word-wrap: break-word; }
-      .pdf-content p { line-height: 1.6; margin-bottom: 1em; }
-      .pdf-content h1, .pdf-content h2, .pdf-content h3 { margin-top: 1.5em; margin-bottom: 0.5em; }
+      .pdf-container {
+        padding: 30px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        color: #1e293b;
+        background-color: #ffffff;
+      }
+      .pdf-title {
+        font-size: 26px;
+        font-weight: 800;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+        color: #0f172a;
+      }
+      .pdf-content p {
+        font-size: 14px;
+        line-height: 1.65;
+        margin-bottom: 0.85em;
+        color: #334155;
+      }
+      .pdf-content h1 { font-size: 22px; font-weight: 700; margin-top: 1.4em; margin-bottom: 0.5em; color: #0f172a; }
+      .pdf-content h2 { font-size: 18px; font-weight: 700; margin-top: 1.3em; margin-bottom: 0.5em; color: #0f172a; }
+      .pdf-content h3 { font-size: 16px; font-weight: 600; margin-top: 1.2em; margin-bottom: 0.4em; color: #0f172a; }
+      
+      /* TABLAS EN PDF CON BORDES, ESPACIADO Y CABECERA */
+      .pdf-content table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin: 20px 0 !important;
+        font-size: 13px !important;
+        page-break-inside: avoid;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      }
+      .pdf-content td,
+      .pdf-content th {
+        border: 1px solid #cbd5e1 !important;
+        padding: 10px 14px !important;
+        text-align: left !important;
+        vertical-align: top !important;
+        color: #1e293b !important;
+        background-color: #ffffff;
+      }
+      .pdf-content tr:first-child td,
+      .pdf-content th {
+        background-color: #f1f5f9 !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        border-bottom: 2px solid #94a3b8 !important;
+      }
+      .pdf-content tr:nth-child(even) td {
+        background-color: #f8fafc !important;
+      }
+
+      /* BLOQUES DE CÓDIGO EN PDF */
+      .pdf-content pre,
+      .pdf-content .ql-syntax,
+      .pdf-content .ql-code-block-container {
+        background-color: #0f172a !important;
+        color: #e2e8f0 !important;
+        border-radius: 8px;
+        padding: 14px 18px;
+        font-family: 'Fira Code', 'Courier New', monospace;
+        font-size: 12.5px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        margin: 16px 0;
+        page-break-inside: avoid;
+      }
+
+      /* CITAS Y LISTAS */
+      .pdf-content blockquote {
+        border-left: 4px solid #3b82f6;
+        padding-left: 14px;
+        margin: 14px 0;
+        color: #64748b;
+        font-style: italic;
+      }
+      .pdf-content ul, .pdf-content ol {
+        padding-left: 24px;
+        margin-bottom: 1em;
+      }
+      .pdf-content li {
+        margin-bottom: 0.35em;
+        line-height: 1.6;
+      }
+
+      /* TIPOGRAFÍAS */
+      .pdf-content .ql-font-inter { font-family: 'Inter', sans-serif !important; }
+      .pdf-content .ql-font-roboto { font-family: 'Roboto', sans-serif !important; }
+      .pdf-content .ql-font-poppins { font-family: 'Poppins', sans-serif !important; }
+      .pdf-content .ql-font-fira-code { font-family: 'Fira Code', monospace !important; }
+      .pdf-content .ql-font-jetbrains-mono { font-family: 'JetBrains Mono', monospace !important; }
+      .pdf-content .ql-font-serif { font-family: Georgia, serif !important; }
+      .pdf-content .ql-font-monospace { font-family: monospace !important; }
     `;
     element.appendChild(style);
 
     const opt = {
-      margin: 10,
+      margin: [10, 10, 10, 10],
       filename: `${title.replace(/\s+/g, '_')}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
+      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
