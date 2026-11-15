@@ -41,12 +41,14 @@ export const NotesPage = () => {
       text: "¿Estás seguro de que deseas salir?",
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: 'var(--accent-color)',
-      cancelButtonColor: 'var(--text-secondary)',
       confirmButtonText: 'Sí, salir',
       cancelButtonText: 'Cancelar',
-      background: 'var(--bg-surface)',
-      color: 'var(--text-primary)'
+      buttonsStyling: false,
+      customClass: {
+        popup: 'devnotas-swal-popup',
+        confirmButton: 'devnotas-swal-confirm',
+        cancelButton: 'devnotas-swal-cancel'
+      }
     });
 
     if (result.isConfirmed) {
@@ -71,7 +73,7 @@ export const NotesPage = () => {
 
   const handleUpdateNote = async (id, updates) => {
     try {
-      setNotes(currentNotes => 
+      setNotes(currentNotes =>
         currentNotes.map(n => n.id === id ? { ...n, ...updates } : n)
       );
       await notesService.updateNote(id, updates);
@@ -86,18 +88,20 @@ export const NotesPage = () => {
       text: "No podrás revertir esta acción.",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: 'var(--accent-red)',
-      cancelButtonColor: 'var(--text-secondary)',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
-      background: 'var(--bg-surface)',
-      color: 'var(--text-primary)'
+      buttonsStyling: false,
+      customClass: {
+        popup: 'devnotas-swal-popup',
+        confirmButton: 'devnotas-swal-confirm devnotas-swal-danger',
+        cancelButton: 'devnotas-swal-cancel'
+      }
     });
 
     if (!result.isConfirmed) {
       return;
     }
-    
+
     try {
       await notesService.deleteNote(id);
       const remainingNotes = notes.filter(n => n.id !== id);
@@ -105,14 +109,17 @@ export const NotesPage = () => {
       if (activeNoteId === id) {
         setActiveNoteId(remainingNotes.length > 0 ? remainingNotes[0].id : null);
       }
-      
+
       Swal.fire({
         title: '¡Eliminada!',
         text: 'Tu nota ha sido eliminada exitosamente.',
         icon: 'success',
-        background: 'var(--bg-surface)',
-        color: 'var(--text-primary)',
-        confirmButtonColor: 'var(--accent-color)'
+        confirmButtonText: 'Aceptar',
+        buttonsStyling: false,
+        customClass: {
+          popup: 'devnotas-swal-popup',
+          confirmButton: 'devnotas-swal-confirm'
+        }
       });
     } catch (error) {
       console.error("Error eliminando nota:", error);
@@ -120,16 +127,20 @@ export const NotesPage = () => {
         title: 'Error',
         text: 'Hubo un problema al eliminar la nota.',
         icon: 'error',
-        background: 'var(--bg-surface)',
-        color: 'var(--text-primary)'
+        confirmButtonText: 'Aceptar',
+        buttonsStyling: false,
+        customClass: {
+          popup: 'devnotas-swal-popup',
+          confirmButton: 'devnotas-swal-confirm devnotas-swal-danger'
+        }
       });
     }
   };
 
   const filteredNotes = notes.filter(n => {
     const term = searchQuery.toLowerCase();
-    return (n.title?.toLowerCase() || '').includes(term) || 
-           (n.plain_text?.toLowerCase() || '').includes(term);
+    return (n.title?.toLowerCase() || '').includes(term) ||
+      (n.plain_text?.toLowerCase() || '').includes(term);
   });
 
   const activeNote = notes.find(n => n.id === activeNoteId);
@@ -142,8 +153,8 @@ export const NotesPage = () => {
           <p>Cargando tus notas...</p>
         </div>
       ) : activeNote ? (
-        <NoteEditor 
-          activeNote={activeNote} 
+        <NoteEditor
+          activeNote={activeNote}
           onUpdateNote={handleUpdateNote}
           onDeleteNote={handleDeleteNote}
           onBack={() => setActiveNoteId(null)}
@@ -160,10 +171,10 @@ export const NotesPage = () => {
           setSearchQuery={setSearchQuery}
         />
       )}
-      
-      <SettingsModal 
-        isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
+
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
     </div>
   );

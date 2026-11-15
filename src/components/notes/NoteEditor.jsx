@@ -20,7 +20,7 @@ const modules = {
     [{ 'header': [1, 2, 3, false] }, { 'size': ['small', false, 'large', 'huge'] }],
     ['bold', 'italic', 'underline', 'strike'],
     [{ 'align': [] }],
-    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
     ['blockquote', 'code-block'],
     ['clean']
   ],
@@ -63,13 +63,13 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
-    
+
     timerRef.current = setTimeout(() => {
       const updates = {
         title: newTitle,
         content: newContent,
       };
-      
+
       if (plainText !== null) {
         updates.plain_text = plainText;
         const shortText = plainText.trim();
@@ -83,7 +83,7 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
   const handlePaste = (e) => {
     const html = e.clipboardData?.getData('text/html');
     const text = e.clipboardData?.getData('text/plain');
-    
+
     // Detectar si es código
     const isCode = text && (
       (html && (html.includes('Consolas') || html.includes('Courier New') || html.includes('white-space: pre') || html.includes('vscode'))) ||
@@ -93,17 +93,17 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
       text.includes('public class ') || text.includes('const ') ||
       text.includes('let ') || (text.includes('{') && text.includes('}') && text.includes('"'))
     );
-    
+
     if (isCode && text && quillRef.current) {
       e.preventDefault();
       const quill = quillRef.current.getEditor();
-      
+
       let lang = 'javascript';
       if (text.includes('CREATE TABLE') || text.includes('SELECT ')) lang = 'sql';
       else if (text.includes('<!DOCTYPE') || text.includes('<html>')) lang = 'html';
       else if (text.includes('namespace ') || text.includes('public class ')) lang = 'csharp';
       else if (text.trim().startsWith('{') && text.trim().endsWith('}')) lang = 'json';
-      
+
       const range = quill.getSelection(true) || { index: 0 };
       let offset = 0;
       if (range.index > 0) {
@@ -113,7 +113,7 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
           offset = 1;
         }
       }
-      
+
       quill.insertText(range.index + offset, text, 'user');
       quill.formatLine(range.index + offset, text.length, 'code-block', lang, 'user');
       quill.setSelection(range.index + offset + text.length, 0, 'user');
@@ -134,7 +134,7 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
 
     const newCodeBlocks = blocks.map((block, index) => {
       const blockRect = block.getBoundingClientRect();
-      
+
       let text = '';
       let langAttr = 'Auto';
 
@@ -147,12 +147,12 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
         // Remover elementos de interfaz que no son parte del código
         const uiElements = clone.querySelectorAll('select, .ql-ui, .code-block-header-pill, .code-lang-label');
         uiElements.forEach(el => el.remove());
-        
+
         // Obtener el texto limpio
         text = clone.innerText || clone.textContent;
         // Eliminar posibles espacios/saltos extra al final
         text = text.trimEnd();
-        
+
         const select = block.querySelector('select');
         if (select) {
           // El texto visible del option seleccionado
@@ -161,10 +161,10 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
         }
       }
 
-      const formattedLang = langAttr && langAttr !== 'Auto' 
-        ? langAttr.charAt(0).toUpperCase() + langAttr.slice(1) 
+      const formattedLang = langAttr && langAttr !== 'Auto'
+        ? langAttr.charAt(0).toUpperCase() + langAttr.slice(1)
         : 'Código';
-      
+
       return {
         id: `code-block-${index}`,
         top: blockRect.top - editorRect.top,
@@ -181,7 +181,7 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
   useEffect(() => {
     // Actualizar botones cuando el contenido cambie
     updateCopyButtons();
-    
+
     // Observar cambios en el DOM del editor para bloques de código
     const observer = new MutationObserver(updateCopyButtons);
     const qlEditor = document.querySelector('.ql-editor');
@@ -214,13 +214,13 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
 
   const handleDownloadMD = () => {
     if (!content || !title) return;
-    
+
     // Crear instancia de Turndown configurada para código
     const turndownService = new TurndownService({
       headingStyle: 'atx',
       codeBlockStyle: 'fenced'
     });
-    
+
     // Mejorar conversión de bloques de código de Quill
     turndownService.addRule('quillCodeBlock', {
       filter: function (node) {
@@ -233,7 +233,7 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
     });
 
     const markdown = turndownService.turndown(content);
-    
+
     // Crear el archivo y forzar descarga
     const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -244,7 +244,7 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    
+
     Swal.fire({
       toast: true, position: 'top-end', icon: 'success', title: 'Descargado como Markdown', showConfirmButton: false, timer: 1500, background: 'var(--bg-surface)', color: 'var(--text-primary)'
     });
@@ -270,11 +270,11 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
     element.appendChild(style);
 
     const opt = {
-      margin:       10,
-      filename:     `${title.replace(/\s+/g, '_')}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      margin: 10,
+      filename: `${title.replace(/\s+/g, '_')}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     html2pdf().set(opt).from(element).save().then(() => {
@@ -287,9 +287,9 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
   if (!activeNote) {
     return (
       <div className="dashboard-editor empty">
-        <div className="empty-state-content" style={{textAlign: 'center', color: 'var(--text-secondary)', opacity: 0.7}}>
-          <BookHeart size={64} style={{marginBottom: '1rem', color: 'var(--accent-color)'}} />
-          <h3 style={{color: 'var(--text-primary)'}}>Selecciona o crea una nota</h3>
+        <div className="empty-state-content" style={{ textAlign: 'center', color: 'var(--text-secondary)', opacity: 0.7 }}>
+          <BookHeart size={64} style={{ marginBottom: '1rem', color: 'var(--accent-color)' }} />
+          <h3 style={{ color: 'var(--text-primary)' }}>Selecciona o crea una nota</h3>
           <p>Tus ideas y fragmentos de código, listos.</p>
         </div>
       </div>
@@ -300,15 +300,15 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
     <div className="dashboard-editor">
       <div className="editor-header">
         <div className="editor-title-container">
-          <button 
-            className="btn-back-to-cards" 
+          <button
+            className="btn-back-to-cards"
             onClick={onBack}
             title="Volver a todas las notas"
           >
             <ChevronLeft size={20} />
             <span>Notas</span>
           </button>
-          <input 
+          <input
             type="text"
             className="editor-title-input"
             value={title}
@@ -320,23 +320,23 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
           <span className="save-status">
             {isSaving ? 'Guardando...' : 'Guardado'}
           </span>
-          <button 
-            className="btn-icon" 
+          <button
+            className="btn-icon"
             onClick={handleDownloadMD}
             title="Descargar como Markdown"
           >
             <FileText size={18} />
           </button>
-          <button 
-            className="btn-icon" 
+          <button
+            className="btn-icon"
             onClick={handleDownloadPDF}
             title="Descargar como PDF"
           >
             <File size={18} />
           </button>
-          <div style={{width: '1px', height: '24px', backgroundColor: 'var(--border-color)', margin: '0 4px'}}></div>
-          <button 
-            className="btn-icon danger" 
+          <div style={{ width: '1px', height: '24px', backgroundColor: 'var(--border-color)', margin: '0 4px' }}></div>
+          <button
+            className="btn-icon danger"
             onClick={() => onDeleteNote(activeNote.id)}
             title="Eliminar nota"
           >
@@ -344,9 +344,9 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
           </button>
         </div>
       </div>
-      
+
       <div className="editor-body" onPasteCapture={handlePaste}>
-        <ReactQuill 
+        <ReactQuill
           ref={quillRef}
           theme="snow"
           value={content}
@@ -355,12 +355,12 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
           placeholder="Escribe tu nota aquí... Usa el icono de código para tus fragmentos."
         />
         {codeBlocks.map((block) => block.isVisible && (
-          <div 
+          <div
             key={block.id}
             className="code-block-header-pill"
-            style={{ 
-              top: block.top + 8, 
-              right: block.right, 
+            style={{
+              top: block.top + 8,
+              right: block.right,
               zIndex: 9999,
               position: 'absolute'
             }}
@@ -369,7 +369,7 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
               {block.language} <ChevronDown size={14} className="chevron" />
             </span>
             <div className="code-pill-divider"></div>
-            <button 
+            <button
               className="code-copy-btn"
               onClick={() => handleCopyCode(block.text)}
               title="Copiar código"

@@ -2143,3 +2143,156 @@ html.dark .ql-editor code {
     display: none;
   }
 }
+
+/* ==============================================================
+   SweetAlert2 Integración de Temas y Alto Contraste
+   ============================================================== */
+.swal2-container {
+  z-index: 99999 !important;
+  backdrop-filter: blur(4px);
+}
+
+.devnotas-swal-popup,
+.swal2-popup {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 16px !important;
+  padding: 2rem 1.75rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.35), 0 10px 10px -5px rgba(0, 0, 0, 0.2) !important;
+  font-family: inherit !important;
+}
+
+.swal2-title {
+  color: var(--text-primary) !important;
+  font-size: 1.4rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 0.5rem !important;
+  font-family: inherit !important;
+}
+
+.swal2-html-container {
+  color: var(--text-secondary) !important;
+  font-size: 0.95rem !important;
+  line-height: 1.5 !important;
+  margin: 0.5rem 0 1.25rem 0 !important;
+  font-family: inherit !important;
+}
+
+.swal2-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.85rem !important;
+  margin-top: 1.5rem !important;
+  width: 100% !important;
+}
+
+/* Botón de Confirmación Principal */
+.devnotas-swal-confirm,
+.swal2-styled.swal2-confirm {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: var(--accent-color) !important;
+  color: #ffffff !important;
+  font-family: inherit !important;
+  font-size: 0.92rem !important;
+  font-weight: 600 !important;
+  padding: 0.7rem 1.5rem !important;
+  border-radius: 10px !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: var(--shadow-sm) !important;
+  outline: none !important;
+}
+
+.devnotas-swal-confirm:hover,
+.swal2-styled.swal2-confirm:hover {
+  filter: brightness(110%) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Botón de Peligro / Eliminar */
+.devnotas-swal-danger,
+.swal2-styled.swal2-confirm.devnotas-swal-danger,
+.swal2-popup:has(.swal2-warning) .swal2-confirm,
+.swal2-popup:has(.swal2-error) .swal2-confirm {
+  background-color: var(--accent-red) !important;
+  color: #ffffff !important;
+}
+
+/* Botón de Cancelar */
+.devnotas-swal-cancel,
+.swal2-styled.swal2-cancel {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: transparent !important;
+  color: var(--text-primary) !important;
+  font-family: inherit !important;
+  font-size: 0.92rem !important;
+  font-weight: 500 !important;
+  padding: 0.7rem 1.5rem !important;
+  border-radius: 10px !important;
+  border: 1px solid var(--border-color) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.devnotas-swal-cancel:hover,
+.swal2-styled.swal2-cancel:hover {
+  background-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Iconos de SweetAlert adaptados al tema */
+.swal2-icon.swal2-question {
+  border-color: color-mix(in srgb, var(--accent-color) 60%, transparent) !important;
+  color: var(--accent-color) !important;
+}
+
+.swal2-icon.swal2-warning {
+  border-color: #f59e0b !important;
+  color: #f59e0b !important;
+}
+
+.swal2-icon.swal2-success {
+  border-color: #10b981 !important;
+}
+
+.swal2-icon.swal2-success [class^='swal2-success-line'] {
+  background-color: #10b981 !important;
+}
+
+.swal2-icon.swal2-success .swal2-success-ring {
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.swal2-toast {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+/* Reglas de Alto Contraste para Temas donde el acento es claro (Modo Dark + Black / Yellow) */
+html.dark[data-accent="black"] .btn-primary,
+html[data-accent="yellow"] .btn-primary,
+html.dark[data-accent="black"] .devnotas-swal-confirm:not(.devnotas-swal-danger),
+html.dark[data-accent="black"] .swal2-styled.swal2-confirm:not(.devnotas-swal-danger),
+html[data-accent="yellow"] .devnotas-swal-confirm:not(.devnotas-swal-danger),
+html[data-accent="yellow"] .swal2-styled.swal2-confirm:not(.devnotas-swal-danger),
+html.dark[data-accent="black"] .user-avatar,
+html.dark[data-accent="black"] .user-avatar-circle,
+html[data-accent="yellow"] .user-avatar,
+html[data-accent="yellow"] .user-avatar-circle,
+html.dark[data-accent="black"] .note-card-create:hover .create-icon-wrapper,
+html[data-accent="yellow"] .note-card-create:hover .create-icon-wrapper {
+  color: #111827 !important;
+}
