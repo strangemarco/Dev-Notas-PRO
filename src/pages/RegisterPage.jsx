@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
-import { UserPlus, User, Mail, Lock } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, BookHeart, Sparkles } from 'lucide-react';
 
 export const RegisterPage = () => {
   const [fullName, setFullName] = useState('');
@@ -30,43 +30,52 @@ export const RegisterPage = () => {
     e.preventDefault();
     setError('');
 
-    if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.');
-      return;
+    if (password !== confirmPassword) {
+      return setError('Las contraseñas no coinciden.');
     }
 
-    if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden.');
-      return;
+    if (password.length < 6) {
+      return setError('La contraseña debe tener al menos 6 caracteres.');
     }
 
     if (!acceptTerms) {
-      setError('Debes aceptar los términos y condiciones.');
-      return;
+      return setError('Debes aceptar los términos y condiciones.');
     }
 
     setIsLoading(true);
 
     try {
-      await authService.register(email, password, fullName);
+      await authService.register(email, password, { full_name: fullName });
       navigate('/');
     } catch (err) {
       console.error(err);
-        const msg = err?.message?.toLowerCase() || '';
-        if (msg.includes('already registered') || msg.includes('already exists') || msg.includes('user already registered')) {
-          setError('Este correo ya está registrado en la base de datos.');
-        } else if (msg.includes('networkerror') || msg.includes('failed to fetch') || msg.includes('fetch')) {
-          setError('No se pudo conectar con el servidor de Supabase. Revisa si el proyecto está activo o la configuración de red.');
-        } else {
-          setError(err.message || 'Error al registrar la cuenta.');
-        }
-      } finally {
-        setIsLoading(false);
+      const msg = err?.message?.toLowerCase() || '';
+      if (msg.includes('user already registered')) {
+        setError('Ya existe un usuario registrado con este correo.');
+      } else if (msg.includes('networkerror') || msg.includes('failed to fetch') || msg.includes('fetch')) {
+        setError('No se pudo conectar con el servidor de Supabase. Revisa si el proyecto está activo o la configuración de red.');
+      } else {
+        setError(err.message || 'Error al crear la cuenta.');
       }
-    };
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    return (
-      <div className="auth-form-container">
+  return (
+    <div className="auth-glass-card">
+      <div className="auth-card-header">
+        <div className="auth-card-badge">
+          <BookHeart size={20} className="brand-logo-icon" />
+          <span>DevNotas <Sparkles size={11} /> PRO</span>
+        </div>
+        <h1 className="card-headline">Crear una cuenta</h1>
+        <p className="card-subheadline">
+          Regístrate gratis y comienza a documentar tu código en la nube.
+        </p>
+      </div>
+
+      <div className="auth-card-content">
         {error && <div className="alert error">{error}</div>}
 
         <button
@@ -176,5 +185,6 @@ export const RegisterPage = () => {
           ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
         </p>
       </div>
-    );
-  };
+    </div>
+  );
+};
