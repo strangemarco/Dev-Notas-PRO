@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import ReactQuill, { Quill } from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { Trash2, BookHeart, ChevronLeft, Clipboard, ChevronDown, Download, FileText, File } from 'lucide-react';
@@ -14,20 +14,28 @@ hljs.configure({
   languages: ['javascript', 'ruby', 'python', 'java', 'cpp', 'go', 'php', 'csharp', 'html', 'css', 'sql', 'json', 'bash']
 });
 
-const modules = {
-  syntax: true,
-  toolbar: [
-    [{ 'header': [1, 2, 3, false] }, { 'size': ['small', false, 'large', 'huge'] }],
-    ['bold', 'italic', 'underline', 'strike'],
-    [{ 'align': [] }],
-    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-    ['blockquote', 'code-block'],
-    ['clean']
-  ],
-  clipboard: {
-    matchVisual: false
-  }
-};
+// Registrar tipografías permitidas en Quill
+const Font = Quill.import('formats/font');
+Font.whitelist = [
+  'sans-serif',
+  'inter',
+  'roboto',
+  'poppins',
+  'fira-code',
+  'jetbrains-mono',
+  'serif',
+  'monospace'
+];
+Quill.register(Font, true);
+
+// Icono personalizado para el botón de Tabla
+const icons = Quill.import('ui/icons');
+icons['table'] = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 3v18"></path>
+  <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+  <path d="M3 9h18"></path>
+  <path d="M3 15h18"></path>
+</svg>`;
 
 export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) => {
   const [title, setTitle] = useState('');
@@ -35,6 +43,126 @@ export const NoteEditor = ({ activeNote, onUpdateNote, onDeleteNote, onBack }) =
   const timerRef = useRef(null);
   const quillRef = useRef(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Configuración de módulos de Quill con soporte para tablas y tipografías
+  const modules = useMemo(() => ({
+    syntax: true,
+    table: true,
+    toolbar: {
+      container: [
+        [{ font: ['sans-serif', 'inter', 'roboto', 'poppins', 'fira-code', 'jetbrains-mono', 'serif', 'monospace'] }],
+        [{ header: [1, 2, 3, false] }, { size: ['small', false, 'large', 'huge'] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ color: [] }, { background: [] }],
+        [{ align: [] }],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['blockquote', 'code-block'],
+        ['table'],
+        ['clean']
+      ],
+      handlers: {
+        table: function () {
+          const quill = this.quill;
+          const tableModule = quill.getModule('table');
+          if (!tableModule) return;
+
+          const [tableNode] = tableModule.getTable();
+          if (tableNode) {
+            Swal.fire({
+              title: 'Opciones de Tabla',
+              html: `
+                <div class="swal-table-options-container">
+                  <button id="swal-add-row-below" class="swal-table-opt-btn">➕ Insertar fila abajo</button>
+                  <button id="swal-add-row-above" class="swal-table-opt-btn">➕ Insertar fila arriba</button>
+                  <button id="swal-add-col-right" class="swal-table-opt-btn">➕ Insertar columna a la derecha</button>
+                  <button id="swal-add-col-left" class="swal-table-opt-btn">➕ Insertar columna a la izquierda</button>
+                  <button id="swal-del-row" class="swal-table-opt-btn danger">🗑️ Eliminar fila actual</button>
+                  <button id="swal-del-col" class="swal-table-opt-btn danger">🗑️ Eliminar columna actual</button>
+                  <button id="swal-del-table" class="swal-table-opt-btn danger">❌ Eliminar tabla completa</button>
+                </div>
+              `,
+              showConfirmButton: false,
+              showCloseButton: true,
+              customClass: {
+                popup: 'devnotas-swal-popup'
+              },
+              didOpen: () => {
+                document.getElementById('swal-add-row-below')?.addEventListener('click', () => {
+                  tableModule.insertRowBelow();
+                  Swal.close();
+                });
+                document.getElementById('swal-add-row-above')?.addEventListener('click', () => {
+                  tableModule.insertRowAbove();
+                  Swal.close();
+                });
+                document.getElementById('swal-add-col-right')?.addEventListener('click', () => {
+                  tableModule.insertColumnRight();
+                  Swal.close();
+                });
+                document.getElementById('swal-add-col-left')?.addEventListener('click', () => {
+                  tableModule.insertColumnLeft();
+                  Swal.close();
+                });
+                document.getElementById('swal-del-row')?.addEventListener('click', () => {
+                  tableModule.deleteRow();
+                  Swal.close();
+                });
+                document.getElementById('swal-del-col')?.addEventListener('click', () => {
+                  tableModule.deleteColumn();
+                  Swal.close();
+                });
+                document.getElementById('swal-del-table')?.addEventListener('click', () => {
+                  tableModule.deleteTable();
+                  Swal.close();
+                });
+              }
+            });
+          } else {
+            Swal.fire({
+              title: 'Insertar Tabla',
+              html: `
+                <div style="display:flex; gap:16px; justify-content:center; margin-top:15px; margin-bottom:10px;">
+                  <div style="text-align:left;">
+                    <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:5px; color:var(--text-secondary);">Filas</label>
+                    <input id="swal-table-rows" type="number" min="1" max="20" value="3" style="width:90px; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-primary); font-size:1rem; text-align:center;" />
+                  </div>
+                  <div style="text-align:left;">
+                    <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:5px; color:var(--text-secondary);">Columnas</label>
+                    <input id="swal-table-cols" type="number" min="1" max="10" value="3" style="width:90px; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-primary); font-size:1rem; text-align:center;" />
+                  </div>
+                </div>
+              `,
+              showCancelButton: true,
+              confirmButtonText: 'Insertar',
+              cancelButtonText: 'Cancelar',
+              buttonsStyling: false,
+              customClass: {
+                popup: 'devnotas-swal-popup',
+                confirmButton: 'devnotas-swal-confirm',
+                cancelButton: 'devnotas-swal-cancel'
+              },
+              preConfirm: () => {
+                const rows = parseInt(document.getElementById('swal-table-rows')?.value || '3', 10);
+                const cols = parseInt(document.getElementById('swal-table-cols')?.value || '3', 10);
+                if (isNaN(rows) || rows < 1 || isNaN(cols) || cols < 1) {
+                  Swal.showValidationMessage('Ingresa al menos 1 fila y 1 columna');
+                  return false;
+                }
+                return { rows, cols };
+              }
+            }).then(result => {
+              if (result.isConfirmed && result.value) {
+                tableModule.insertTable(result.value.rows, result.value.cols);
+              }
+            });
+          }
+        }
+      }
+    },
+    clipboard: {
+      matchVisual: false
+    }
+  }), []);
 
   useEffect(() => {
     if (activeNote) {
