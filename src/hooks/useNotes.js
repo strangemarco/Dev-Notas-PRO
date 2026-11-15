@@ -11,14 +11,18 @@ export const useNotes = () => {
 
   // Cargar notas al inicio
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) {
+      setNotes([]);
+      setActiveNoteId(null);
+      return;
+    }
     
     const fetchNotes = async () => {
       setIsLoading(true);
       try {
-        const data = await notesService.getNotes();
-        setNotes(data);
-        if (data.length > 0 && !activeNoteId) {
+        const data = await notesService.getNotes(user.id);
+        setNotes(data || []);
+        if (data?.length > 0 && !activeNoteId) {
           setActiveNoteId(data[0].id);
         }
       } catch (err) {
@@ -30,9 +34,10 @@ export const useNotes = () => {
     };
 
     fetchNotes();
-  }, [user]);
+  }, [user?.id]);
 
   const createNote = async () => {
+    if (!user?.id) return null;
     try {
       const newNote = await notesService.createNote(user.id);
       setNotes(prev => [newNote, ...prev]);
@@ -50,7 +55,7 @@ export const useNotes = () => {
 
   const deleteNote = async (id) => {
     try {
-      await notesService.deleteNote(id);
+      await notesService.deleteNote(id, user?.id);
       setNotes(prev => prev.filter(n => n.id !== id));
       if (activeNoteId === id) {
         setActiveNoteId(null);

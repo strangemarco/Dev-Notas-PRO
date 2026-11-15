@@ -17,15 +17,20 @@ export const NotesPage = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      loadNotes();
+    if (user?.id) {
+      loadNotes(user.id);
+    } else {
+      setNotes([]);
+      setActiveNoteId(null);
     }
-  }, [user]);
+  }, [user?.id]);
 
-  const loadNotes = async () => {
+  const loadNotes = async (userId) => {
+    const targetUserId = userId || user?.id;
+    if (!targetUserId) return;
     setIsLoading(true);
     try {
-      const data = await notesService.getNotes();
+      const data = await notesService.getNotes(targetUserId);
       setNotes(data || []);
       // No seleccionamos nota por defecto para que la vista inicial sea la cuadrícula de Cards
     } catch (error) {
@@ -61,6 +66,7 @@ export const NotesPage = () => {
   };
 
   const handleNewNote = async () => {
+    if (!user?.id) return;
     try {
       const newNote = await notesService.createNote(user.id);
       setNotes([newNote, ...notes]);
@@ -76,7 +82,7 @@ export const NotesPage = () => {
       setNotes(currentNotes =>
         currentNotes.map(n => n.id === id ? { ...n, ...updates } : n)
       );
-      await notesService.updateNote(id, updates);
+      await notesService.updateNote(id, updates, user?.id);
     } catch (error) {
       console.error("Error guardando nota:", error);
     }
@@ -103,7 +109,7 @@ export const NotesPage = () => {
     }
 
     try {
-      await notesService.deleteNote(id);
+      await notesService.deleteNote(id, user?.id);
       const remainingNotes = notes.filter(n => n.id !== id);
       setNotes(remainingNotes);
       if (activeNoteId === id) {
