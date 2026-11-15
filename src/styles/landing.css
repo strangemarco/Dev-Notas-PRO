@@ -41,6 +41,68 @@
 }
 
 /* --------------------------------------------------------------
+   BOTONES Y ELEMENTOS DE ACCIÓN COMPARTIDOS
+   -------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.4rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  text-decoration: none !important;
+  font-size: 0.95rem;
+  border: 1px solid transparent;
+  line-height: 1;
+}
+
+.btn-primary {
+  background-color: var(--accent-color) !important;
+  color: #ffffff !important;
+  border-color: var(--accent-color) !important;
+}
+
+.btn-primary:hover {
+  filter: brightness(110%);
+  transform: translateY(-1px);
+}
+
+html.dark[data-accent="black"] .btn-primary {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border-color: #ffffff !important;
+}
+
+.btn-outline {
+  background: color-mix(in srgb, var(--bg-surface) 60%, transparent) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  backdrop-filter: blur(8px);
+}
+
+.btn-outline:hover {
+  background: color-mix(in srgb, var(--border-color) 40%, var(--bg-surface)) !important;
+  border-color: var(--accent-color) !important;
+  transform: translateY(-1px);
+}
+
+.btn-sm {
+  padding: 0.45rem 0.95rem !important;
+  font-size: 0.85rem !important;
+  border-radius: 8px !important;
+}
+
+.btn-lg {
+  padding: 0.85rem 1.75rem !important;
+  font-size: 1.05rem !important;
+  border-radius: 12px !important;
+}
+
+/* --------------------------------------------------------------
    1. NAVBAR PÚBLICO MODERNO (STICKY)
    -------------------------------------------------------------- */
 .public-navbar {
@@ -68,8 +130,8 @@
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  text-decoration: none;
-  color: var(--text-primary);
+  text-decoration: none !important;
+  color: var(--text-primary) !important;
   font-weight: 700;
   letter-spacing: -0.02em;
   font-size: 1.15rem;
@@ -106,15 +168,15 @@
 }
 
 .public-nav-link {
-  text-decoration: none;
-  color: var(--text-secondary);
+  text-decoration: none !important;
+  color: var(--text-secondary) !important;
   font-size: 0.92rem;
   font-weight: 500;
   transition: color 0.2s;
 }
 
 .public-nav-link:hover {
-  color: var(--text-primary);
+  color: var(--text-primary) !important;
 }
 
 .public-nav-actions {
@@ -133,8 +195,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  text-decoration: none;
-  color: var(--text-primary);
+  text-decoration: none !important;
+  color: var(--text-primary) !important;
   font-size: 0.92rem;
   font-weight: 600;
   padding: 0.5rem 1rem;
@@ -147,6 +209,7 @@
 .btn-nav-login:hover {
   background: color-mix(in srgb, var(--border-color) 50%, transparent);
   border-color: var(--border-color);
+  color: var(--text-primary) !important;
 }
 
 .public-nav-auth-switch {
@@ -578,14 +641,14 @@
 }
 
 .footer-links a {
-  text-decoration: none;
+  text-decoration: none !important;
   font-size: 0.9rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary) !important;
   transition: color 0.2s;
 }
 
 .footer-links a:hover {
-  color: var(--text-primary);
+  color: var(--text-primary) !important;
 }
 
 .footer-bottom p {
@@ -771,3 +834,4 @@
     display: none;
   }
 }
+

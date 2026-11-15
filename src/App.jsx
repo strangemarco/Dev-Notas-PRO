@@ -15,6 +15,7 @@ import { NotesPage } from './pages/NotesPage';
 
 // Styles
 import './styles/index.css';
+import './styles/landing.css';
 
 // Controlador de ruta raíz: Landing Page si no hay sesión, App de notas si hay sesión
 const RootPage = () => {
